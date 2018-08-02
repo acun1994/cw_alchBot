@@ -71,11 +71,7 @@ Use /help for more info', parse_mode=ParseMode.MARKDOWN)
 @catch_error
 def help(bot, update):
     """Send a message when the command /help is issued."""
-    update.message.reply_text('INLINE Bot usage: \n@cw_guildBot {itemName} {quantity} {"w" (optional, to withdraw)}. \n\nItem Name does not have to be full, 3 characters is enough.\n\
-    STANDARD Bot usage: \nForward a list of items. Should support all inventories.\n\
-    RECIPE Bot usage: \nForward the recipe text as received from CW.\
-    WARNING: Enchanted and unique items will NOT be processed\n\
-    Poke @acun1994 if you find something that isn\'t handled yet')
+    update.message.reply_text('Forward your /alch here. The bot will reply with a list of craftable potions/ingredients\nPoke @acun1994 if it breaks')
 
 @catch_error
 def error(bot, update, context = ""):
@@ -90,11 +86,9 @@ def error(bot, update, context = ""):
         return
     except TelegramError:
         logger.warning('Update "%s" caused error "%s"', update, context)
-        bot.sendMessage(chat_id='-1001213337130', text = 'CW - <b>Telegram Error</b>\n Update "{}" caused error "{}"'.format(update, context), parse_mode = "HTML")
         return
     except Exception:
         logger.warning('Update "%s" caused error "%s"', update, context)
-        bot.sendMessage(chat_id='-1001213337130', text = 'CW - <b>Error</b>\n Update "{}" caused error "{}"'.format(update, context), parse_mode = "HTML")
 
 # Create the Updater and pass it your bot's token.
 # Make sure to set use_context=True to use the new context baspls ed callbacks
