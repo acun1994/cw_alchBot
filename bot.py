@@ -36,7 +36,7 @@ config = {
 firebase = pyrebase.initialize_app(config)
 db = firebase.database()
 potions = db.child("potions").get()
-print("Ready")
+print("Ready for processing")
 
 def catch_error(f):
     @wraps(f)
@@ -110,6 +110,51 @@ def error(bot, update, context = ""):
     except Exception:
         logger.warning('Update "%s" caused error "%s"', update, context)
 
+@catch_error
+def inlinequery(bot, update):
+    """Handle the inline query."""
+    query = update.inline_query.query
+
+    results = []
+
+    if query == '' or len(query) < 3:
+        update.inline_query.answer(results)
+        return
+
+    listValid = [key for key, value in potions.val().items() if query in key.lower()]
+
+    if len(listValid) == 0:
+        results = [
+            InlineQueryResultArticle(
+                id=uuid4(),
+                title = "Not Found",
+                input_message_content = InputTextMessageContent(
+                    '{} not found'.format(" ".join(query))
+                )
+            )
+        ]
+
+    else:
+        for key in listValid: 
+            curPotion = potions.val()[key]
+            ingList = ""
+            for k,v in curPotion['mats'].items():
+                if ingList is not "": ingList += ", "
+                ingList += k + " x" + str(v)
+
+            results.append(
+                InlineQueryResultArticle(
+                    id=uuid4(),
+                    title = "{}".format(key),
+                    description = ingList,
+                    input_message_content = InputTextMessageContent(
+                        "/brew_" + curPotion['id']
+                    )
+                )
+            )
+
+    update.inline_query.answer(results, cache_time = None, is_personal = True)
+
 # Create the Updater and pass it your bot's token.
 # Make sure to set use_context=True to use the new context baspls ed callbacks
 # Post version 12 this will no longer be necessary
@@ -126,6 +171,9 @@ dp.add_handler(CommandHandler("dump", dump))
 
 # Schedule
 #jobQ.run_repeating(status, interval=60, first = 0)
+
+# on Inline query
+dp.add_handler(InlineQueryHandler(inlinequery))
 
 # on noncommand i.e message - echo the message on Telegram
 #dp.add_handler(MessageHandler(Filters.text, process))
