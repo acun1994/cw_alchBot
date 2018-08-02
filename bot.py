@@ -155,6 +155,12 @@ def inlinequery(bot, update):
 
     update.inline_query.answer(results, cache_time = None, is_personal = True)
 
+@catch_error
+def refresh(bot, update):
+    global potions
+    potions = db.child("potions").get()
+    update.message.reply_text("Potion List updated!")
+
 # Create the Updater and pass it your bot's token.
 # Make sure to set use_context=True to use the new context baspls ed callbacks
 # Post version 12 this will no longer be necessary
@@ -168,6 +174,7 @@ dp = updater.dispatcher
 dp.add_handler(CommandHandler("start", start))
 dp.add_handler(CommandHandler("help", help))
 dp.add_handler(CommandHandler("dump", dump))
+dp.add_handler(CommandHandler("refresh", refresh))
 
 # Schedule
 #jobQ.run_repeating(status, interval=60, first = 0)
