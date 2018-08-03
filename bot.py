@@ -36,6 +36,12 @@ config = {
 firebase = pyrebase.initialize_app(config)
 db = firebase.database()
 potions = db.child("potions").get()
+items = db.child("items").get()
+
+itemCodes = {}
+
+for item in items.each():
+   itemCodes[item.key()] = item.val()["id"]
 print("Ready for processing")
 
 def catch_error(f):
@@ -156,10 +162,45 @@ def inlinequery(bot, update):
     update.inline_query.answer(results, cache_time = None, is_personal = True)
 
 @catch_error
+def process(bot, update):
+    #https://t.me/share/url?url=/brew_60%20120 link format for auto forward
+    playerInv = update.message.text.splitlines()
+    repackPotions = potions.val()
+
+    if "/aa" not in playerInv[1]:
+        update.message.reply_text("Please forward me your /alch")
+
+    playerInv = {a[0]:a[1] for a in [line[7:].split(" x ") for line in playerInv[1:]]}
+
+    playerInv = {k.lower(): v for k,v in playerInv.items()}
+
+    craftablePotions = {}
+
+    for k,v in potions.val().items():
+        curMats = v['mats']
+        craftCount = 0
+        try:
+            craftCount = min([int(int(playerInv[k.lower()])/v) for k,v in curMats.items()])
+        except KeyError:
+            craftCount = 0
+
+        craftablePotions[k] = craftCount
+    
+    replyText = "\n".join(["<a href='https://t.me/share/url?url=/brew_{}%20{}'>{}</a> x {} ( {}💧)".format(repackPotions[k]['id'],v,k,v,v*repackPotions[k]['mana']) for k,v in craftablePotions.items() if v > 0])
+
+    update.message.reply_text(replyText, parse_mode="HTML")
+
+@catch_error
 def refresh(bot, update):
     global potions
+    global itemCodes
     potions = db.child("potions").get()
     update.message.reply_text("Potion List updated!")
+    items = db.child("items").get()
+
+    itemCodes.clear()
+    for item in items.each():
+        itemCodes[item.key()] = item.val()["id"]
 
 # Create the Updater and pass it your bot's token.
 # Make sure to set use_context=True to use the new context baspls ed callbacks
@@ -183,7 +224,7 @@ dp.add_handler(CommandHandler("refresh", refresh))
 dp.add_handler(InlineQueryHandler(inlinequery))
 
 # on noncommand i.e message - echo the message on Telegram
-#dp.add_handler(MessageHandler(Filters.text, process))
+dp.add_handler(MessageHandler(Filters.text, process))
 
 # log all errors
 dp.add_error_handler(error)
