@@ -30,7 +30,7 @@ config = {
   "authDomain": "chat-wars-bots.firebaseapp.com",
   "databaseURL": "https://chat-wars-bots.firebaseio.com",
   "storageBucket": "chat-wars-bots.appspot.com",
-  "serviceAccount": "chat-wars-bots-a847acf4208f.json"
+  "serviceAccount": "serviceToken.json"
 }
 
 firebase = pyrebase.initialize_app(config)
