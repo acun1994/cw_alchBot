@@ -188,6 +188,9 @@ def process(bot, update):
     
     replyText = "\n".join(["<a href='https://t.me/share/url?url=/brew_{}%20{}'>{}</a> x {} ( {}💧)".format(repackPotions[k]['id'],v,k,v,v*repackPotions[k]['mana']) for k,v in craftablePotions.items() if v > 0])
 
+    if replyText is None or replyText == "":
+        replyText = "You poor thing, you're broke. No brewable items possible"
+
     update.message.reply_text(replyText, parse_mode="HTML")
 
 @catch_error
