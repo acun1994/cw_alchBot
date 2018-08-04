@@ -170,6 +170,8 @@ def process(bot, update):
     if "/aa" in playerInv[1]:
         playerInv = playerInv[1:]
 
+    playerInv = [line[:-1] if line[:-1] == ' ' else line for line in playerInv]
+
     if  " x " in playerInv[0]:
         playerInv = {a[0]:a[1] for a in [line[7:].split(" x ") for line in playerInv]}
     else:
@@ -189,6 +191,10 @@ def process(bot, update):
 
         craftablePotions[k] = craftCount
     
+    if all(value == 0 for value in craftablePotions.values()):
+        update.message.reply_text = "No brewable items possible"
+        return
+
     grouped = {}
 
     grouped['Vials'] = {k:v for k,v in craftablePotions.items() if 'Via' in k}
