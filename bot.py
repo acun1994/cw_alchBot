@@ -36,6 +36,7 @@ config = {
 firebase = pyrebase.initialize_app(config)
 db = firebase.database()
 potions = db.child("potions").get()
+repackPotions = potions.val()
 items = db.child("items").get()
 
 itemCodes = {}
@@ -165,12 +166,14 @@ def inlinequery(bot, update):
 def process(bot, update):
     #https://t.me/share/url?url=/brew_60%20120 link format for auto forward
     playerInv = update.message.text.splitlines()
-    repackPotions = potions.val()
 
-    if "/aa" not in playerInv[1]:
-        update.message.reply_text("Please forward me your /alch")
+    if "/aa" in playerInv[1]:
+        playerInv = playerInv[1:]
 
-    playerInv = {a[0]:a[1] for a in [line[7:].split(" x ") for line in playerInv[1:]]}
+    if  " x " in playerInv[0]:
+        playerInv = {a[0]:a[1] for a in [line[7:].split(" x ") for line in playerInv]}
+    else:
+        playerInv = {a[0]:a[1] for a in [line[:-1].split(" (") for line in playerInv]}
 
     playerInv = {k.lower(): v for k,v in playerInv.items()}
 
@@ -186,24 +189,38 @@ def process(bot, update):
 
         craftablePotions[k] = craftCount
     
-    replyText = "\n".join(["<a href='https://t.me/share/url?url=/brew_{}%20{}'>{}</a> x {} ( {}💧)".format(repackPotions[k]['id'],v,k,v,v*repackPotions[k]['mana']) for k,v in craftablePotions.items() if v > 0])
+    grouped = {}
 
-    if replyText is None or replyText == "":
-        replyText = "You poor thing, you're broke. No brewable items possible"
+    grouped['Vials'] = {k:v for k,v in craftablePotions.items() if 'Via' in k}
+    grouped['Potions'] = {k:v for k,v in craftablePotions.items() if 'Pot' in k}
+    grouped['Bottles'] = {k:v for k,v in craftablePotions.items() if 'Bot' in k}
+    grouped['Others'] = {k:v for k,v in craftablePotions.items() if not k.startswith(('Via','Pot','Bot')) }
 
-    update.message.reply_text(replyText, parse_mode="HTML")
+    for key,ele in grouped.items():
+        replyText = "`{}`\n".format(key)
+        replyText += "\n\n".join(["{} 💧{} x{:<4}\n [5]({})  [ 10 ]({})  [ 20 ]({})  [MAX]({})".format(k,repackPotions[k]['mana'],v,genText(k,5),genText(k,10),genText(k,20),genText(k,v)) for k,v in ele.items() if v > 0])
+
+        if replyText is None or replyText == "":
+            replyText = "No brewable items in this category"
+
+        update.message.reply_text(replyText, parse_mode=ParseMode.MARKDOWN)
 
 @catch_error
 def refresh(bot, update):
     global potions
     global itemCodes
+    global repackPotions
     potions = db.child("potions").get()
+    repackPotions = potions.val()
     update.message.reply_text("Potion List updated!")
     items = db.child("items").get()
 
     itemCodes.clear()
     for item in items.each():
         itemCodes[item.key()] = item.val()["id"]
+
+def genText(name,amt):
+    return "https://t.me/share/url?url=/brew_{}%20{}".format(repackPotions[name]['id'], amt)
 
 # Create the Updater and pass it your bot's token.
 # Make sure to set use_context=True to use the new context baspls ed callbacks
