@@ -170,12 +170,13 @@ def process(bot, update):
     if "/aa" in playerInv[1]:
         playerInv = playerInv[1:]
 
-    playerInv = [line[:-1] if line[:-1] == ' ' else line for line in playerInv]
+    playerInv = [line[:-1] if line[:-1] == ' ' or line[:-1] == ')' else line for line in playerInv]
 
     if  " x " in playerInv[0]:
         playerInv = {a[0]:a[1] for a in [line[7:].split(" x ") for line in playerInv]}
     else:
-        playerInv = {a[0]:a[1] for a in [line[:-1].split(" (") for line in playerInv]}
+
+        playerInv = {a[0]:a[1] for a in [line.split(")")[0].split(" (") for line in playerInv]}
 
     playerInv = {k.lower(): v for k,v in playerInv.items()}
 
@@ -203,13 +204,13 @@ def process(bot, update):
     grouped['Others'] = {k:v for k,v in craftablePotions.items() if not k.startswith(('Via','Pot','Bot')) }
 
     for key,ele in grouped.items():
-        replyText = "`{}`\n".format(key)
-        replyText += "\n\n".join(["{} 💧{} x{:<4}\n [5]({})  [ 10 ]({})  [ 20 ]({})  [MAX]({})".format(k,repackPotions[k]['mana'],v,genText(k,5),genText(k,10),genText(k,20),genText(k,v)) for k,v in ele.items() if v > 0])
+        replyText1 = "`{}`\n".format(key)
+        replyText = "\n\n".join(["{} 💧{} x{:<4}\n [5]({})  [ 10 ]({})  [ 20 ]({})  [MAX]({})".format(k,repackPotions[k]['mana'],v,genText(k,5),genText(k,10),genText(k,20),genText(k,v)) for k,v in ele.items() if v > 0])
 
         if replyText is None or replyText == "":
             replyText = "No brewable items in this category"
 
-        update.message.reply_text(replyText, parse_mode=ParseMode.MARKDOWN)
+        update.message.reply_text(replyText1 + replyText, parse_mode=ParseMode.MARKDOWN)
 
 @catch_error
 def refresh(bot, update):
