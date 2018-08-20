@@ -165,6 +165,9 @@ def inlinequery(bot, update):
 @catch_error
 def process(bot, update):
     #https://t.me/share/url?url=/brew_60%20120 link format for auto forward
+    if update.message is None:
+        return
+		
     playerInv = update.message.text.splitlines()
 
     if "Guild" in playerInv[0]:
