@@ -167,6 +167,9 @@ def process(bot, update):
     #https://t.me/share/url?url=/brew_60%20120 link format for auto forward
     playerInv = update.message.text.splitlines()
 
+    if "Guild" in playerInv[0]:
+        playerInv = playerInv[1:]
+
     if "/aa" in playerInv[1]:
         playerInv = playerInv[1:]
 
