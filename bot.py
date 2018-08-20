@@ -52,7 +52,7 @@ def catch_error(f):
             return f(bot, update)
         except IndexError as e:
             if update and update.message  :
-                update.message.reply_text("No transferrable items found")
+                update.message.reply_text("No brewable items found")
         except Exception as e:
             logger.error(str(e))
 
@@ -172,8 +172,9 @@ def process(bot, update):
 
     if "Guild" in playerInv[0]:
         playerInv = playerInv[1:]
+        playerInv = [line[3:] for line in playerInv]
 
-    if "/aa" in playerInv[1]:
+    elif "/aa" in playerInv[1]:
         playerInv = playerInv[1:]
 
     playerInv = [line[:-1] if line[:-1] == ' ' or line[:-1] == ')' else line for line in playerInv]
