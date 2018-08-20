@@ -173,16 +173,17 @@ def process(bot, update):
     if "Guild" in playerInv[0]:
         playerInv = playerInv[1:]
         playerInv = [line[3:] for line in playerInv]
-
+        
     elif "/aa" in playerInv[1]:
         playerInv = playerInv[1:]
+        playerInv = [line[7:] for line in playerInv]
 
     playerInv = [line[:-1] if line[:-1] == ' ' or line[:-1] == ')' else line for line in playerInv]
 
-    if  " x " in playerInv[0]:
-        playerInv = {a[0]:a[1] for a in [line[7:].split(" x ") for line in playerInv]}
-    else:
 
+    if  " x " in playerInv[0]:
+        playerInv = {a[0]:a[1] for a in [line.split(" x ") for line in playerInv]}
+    else:
         playerInv = {a[0]:a[1] for a in [line.split(")")[0].split(" (") for line in playerInv]}
 
     playerInv = {k.lower(): v for k,v in playerInv.items()}
